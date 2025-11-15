@@ -1,1 +1,2 @@
 "# DailyChronicle-BE" 
+"# DailyChronicle-Admin" 
