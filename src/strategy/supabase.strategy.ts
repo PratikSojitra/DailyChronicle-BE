@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from 'src/entities/user.entity';
+import { passportJwtSecret } from 'jwks-rsa';
 
 @Injectable()
 export class SupabaseStrategy extends PassportStrategy(Strategy) {
@@ -13,41 +14,47 @@ export class SupabaseStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
+    const supabaseUrl = configService.get<string>('SUPABASE_URL'); 
+    const jwksUri = `${supabaseUrl}/auth/v1/.well-known/jwks.json`;
+
     super({
-      // --- DEBUGGING CHANGE: Custom Extractor to spy on the header ---
-      jwtFromRequest: ExtractJwt.fromExtractors([
-        (request: any) => {
-          const authHeader = request?.headers?.authorization;
-          console.log('\n--- 🔍 DEBUG: INCOMING REQUEST ---');
-          console.log('Raw Authorization Header:', authHeader ? authHeader : 'MISSING');
-          
-          if (!authHeader) return null;
-          
-          // clean up the token
-          const token = authHeader.replace('Bearer ', '').trim();
-          console.log('Token extracted:', token.substring(0, 10) + '...');
-          return token;
-        },
-      ]),
-      // ---------------------------------------------------------------
+      jwtFromRequest: (request: any) => {
+        const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
+        
+        if (token) {
+          try {
+            const parts = token.split('.');
+            if (parts.length === 3) {
+              const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+            }
+          } catch (e) {}
+        }
+        return token;
+      },
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('SUPABASE_JWT_SECRET'),
+      secretOrKeyProvider: passportJwtSecret({
+        cache: true,
+        rateLimit: true,
+        jwksRequestsPerMinute: 5,
+        jwksUri: jwksUri,
+      }),
+      algorithms: ['ES256', 'HS256'],
+      issuer: `${supabaseUrl}/auth/v1`,
+      audience: 'authenticated',
     });
   }
 
   async validate(payload: any) {
-    console.log('--- ✅ SIGNATURE VALIDATED! ---');
-    console.log('Searching for User ID:', payload.sub);
 
-    // CRITICAL: We check the DB for the exact UUID from the token
-    let user = await this.userRepository.findOneBy({ id: payload.sub });
-
-    if (!user) {
-        console.log('❌ User not found in DB. Make sure ID matches:', payload.sub);
-        throw new UnauthorizedException();
+    if (!payload.sub) {
+      throw new UnauthorizedException('Invalid token payload');
     }
 
-    console.log('✅ User found:', user.email);
+    const user = await this.userRepository.findOneBy({ id: payload.sub });
+
+    if (!user) {
+        throw new UnauthorizedException(`User ID ${payload.sub} not registered`);
+    }
     return user; 
   }
 }

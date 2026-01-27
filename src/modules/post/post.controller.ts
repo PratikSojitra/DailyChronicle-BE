@@ -10,7 +10,7 @@ import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
 @ApiTags('Posts')
 @Controller('posts')
 @UseGuards(AuthGuard('jwt'), RolesGuard)
-@ApiBearerAuth()
+@ApiBearerAuth('JWT-auth')
 export class PostController {
     constructor(private readonly postService: PostService) {}
 

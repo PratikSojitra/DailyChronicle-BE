@@ -13,11 +13,18 @@ async function bootstrap() {
     .setTitle('Daily Chronicle API')
     .setDescription('The backend API for the Daily Chronicle blog platform')
     .setVersion('1.0')
-    .addBearerAuth({ type: 'http', scheme: 'bearer', bearerFormat: 'JWT' }) // <--- Adds the "Authorize" button for JWT tokens
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      'JWT-auth',
+    ) // <--- Adds the "Authorize" button for JWT tokens
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('api/v1', app, document);
 
   await app.listen(process.env.PORT ?? 3000);
 }
