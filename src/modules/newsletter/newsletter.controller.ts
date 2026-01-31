@@ -46,6 +46,8 @@ export class NewsletterController {
     }
 
     @Post('subscribe')
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(AuthGuard('jwt'))
     async subscribe(@Body() subscribeDto: SubscribeDto) {
         return this.newsletterService.subscribe(subscribeDto);
     }
