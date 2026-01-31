@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards, Request } from "@nestjs/common";
 import { PostService } from "./post.service";
 import { AuthGuard } from "@nestjs/passport";
 import { RolesGuard } from "src/guards/roles.guard";
@@ -27,8 +27,11 @@ export class PostController {
     }
 
     @Get(':id')
-    async getPostById(@Param('id') id: string) {
-        return this.postService.getPostById(id);
+    async getPostById(@Param('id') id: string, @Request() req) {
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const userId = req.user?.id || null;
+
+        return this.postService.getPostById(id, ip, userId);
     }
 
     @Post()

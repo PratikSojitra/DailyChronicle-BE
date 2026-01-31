@@ -3,12 +3,15 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Post, PostStatus } from "src/entities/post.entity";
 import { Repository } from "typeorm";
 import { CreatePostDto, UpdatePostDto, UpdatePostStatusDto } from "./dto/post.dto";
+import { PostView } from "src/entities/postView.entity";
 
 @Injectable()
 export class PostService {
     constructor(
         @InjectRepository(Post)
-        private postRepository: Repository<Post>
+        private postRepository: Repository<Post>,
+        @InjectRepository(PostView)
+        private postViewRepository: Repository<PostView>
     ) {}
 
     public async createPost(createPostDto: CreatePostDto) {
@@ -28,10 +31,26 @@ export class PostService {
         });
     }
 
-    public async getPostById(id: string) {
+    public async getPostById(id: string, ip?: string, userId?: string) {
         const post = await this.postRepository.findOne({ where: { id }, relations: ['author', 'category'] });
         if (!post) throw new NotFoundException(`Post with ID ${id} not found`);
-        await this.postRepository.update(id, { views: post.views + 1 });
+        let alreadyViewed = false;
+
+        if(userId) {
+            const postView = await this.postViewRepository.findOne({ where: { post: { id }, viewer: { id: userId } } });
+            if(postView) alreadyViewed = true;
+        } else {
+            const postView = await this.postViewRepository.findOne({ where: { post: { id }, userIp: ip } });
+            if(postView) alreadyViewed = true;
+        }
+
+        if(!alreadyViewed) {
+            const postView = this.postViewRepository.create({ post: { id }, viewer: { id: userId }, userIp: ip });
+            await this.postViewRepository.save(postView);
+
+            await this.postRepository.increment({id}, 'views', 1);
+            post.views = (post.views || 0) + 1;
+        }
         return post;
     }
 
