@@ -10,6 +10,9 @@ import { AuthModule } from './modules/auth/auth.module';
 import { CategoryModule } from './modules/category/category.module';
 import { PostModule } from './modules/post/post.module';
 import { UserModule } from './modules/user/user.module';
+import { NewsletterModule } from './modules/newsletter/newsletter.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { MailerModule } from '@nestjs-modules/mailer';
 
 @Module({
   imports: [
@@ -30,6 +33,22 @@ import { UserModule } from './modules/user/user.module';
     CategoryModule,
     PostModule,
     UserModule,
+    NewsletterModule,
+    EventEmitterModule.forRoot(),
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.gmail.com', // or smtp.sendgrid.net
+        port: 465,
+        secure: true, // true for 465, false for other ports
+        auth: {
+          user: process.env.EMAIL_ADDRESS, // Your real email
+          pass: process.env.EMAIL_PASSWORD, // The 16-char App Password
+        },
+      },
+      defaults: {
+        from: '"Daily Chronicle" <noreply@dailychronicle.com>',
+      },
+    })
   ],
   controllers: [AppController],
   providers: [AppService],
