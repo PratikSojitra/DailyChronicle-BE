@@ -26,7 +26,7 @@ export class CreatePostDto {
     @IsOptional()
     @IsString({ message: 'Status must be a string' })
     @IsEnum(PostStatus, { message: 'Status must be a valid status' })
-    status?: string;
+    status?: PostStatus;
 
     @ApiProperty({ required: true })
     @IsNotEmpty({ message: 'Author ID is required' })
@@ -63,7 +63,8 @@ export class UpdatePostDto {
     @ApiPropertyOptional({ required: false })
     @IsOptional()
     @IsString({ message: 'Status must be a string' })
-    status?: string;
+    @IsEnum(PostStatus, { message: 'Status must be a valid status' })
+    status?: PostStatus;
 
     @ApiPropertyOptional({ required: false })
     @IsOptional()
@@ -74,4 +75,12 @@ export class UpdatePostDto {
     @IsOptional()
     @IsString({ message: 'Category ID must be a string' })
     categoryId?: string;
+}
+
+export class UpdatePostStatusDto {
+    @ApiProperty({ required: true })
+    @IsNotEmpty({ message: 'Status is required' })
+    @IsString({ message: 'Status must be a string' })
+    @IsEnum(PostStatus, { message: 'Status must be a valid status' })
+    status: PostStatus;
 }

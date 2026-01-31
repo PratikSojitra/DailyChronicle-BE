@@ -1,8 +1,8 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Post, PostStatus } from "src/entities/post.entity";
 import { Repository } from "typeorm";
-import { CreatePostDto, UpdatePostDto } from "./dto/post.dto";
+import { CreatePostDto, UpdatePostDto, UpdatePostStatusDto } from "./dto/post.dto";
 
 @Injectable()
 export class PostService {
@@ -12,33 +12,42 @@ export class PostService {
     ) {}
 
     public async createPost(createPostDto: CreatePostDto) {
-        // const post = this.postRepository.create(createPostDto);
-        // return this.postRepository.save(post);
-        return 'post is created';
+        const createPostPayload = {
+            ...createPostDto,
+            slug: createPostDto.slug || createPostDto.title.toLowerCase().replace(/\s+/g, '-'),
+            createdAt: new Date(),
+            updatedAt: new Date()
+        }
+        const post = this.postRepository.create(createPostPayload);
+        return this.postRepository.save(post);
     }
 
     public async getAllPosts() {
-        // return this.postRepository.find();
-        return 'all posts are fetched';
+        return this.postRepository.find({
+            relations: ['author', 'category']
+        });
     }
 
     public async getPostById(id: string) {
-        // return this.postRepository.findOne({ where: { id } });
-        return 'post is fetched';
+        const post = await this.postRepository.findOne({ where: { id }, relations: ['author', 'category'] });
+        if (!post) throw new NotFoundException(`Post with ID ${id} not found`);
+        await this.postRepository.update(id, { views: post.views + 1 });
+        return post;
     }
 
     public async updatePost(id: string, updatePostDto: UpdatePostDto) {
-        // return this.postRepository.update(id, updatePostDto);
-        return 'post is updated';
+        return this.postRepository.update(id, updatePostDto);
+    }
+
+    public async updatePostStatus(id: string, updatePostDto: UpdatePostStatusDto) {
+        return this.postRepository.update(id, updatePostDto);
     }
 
     public async deletePost(id: string) {
-        // return this.postRepository.delete(id);
-        return 'post is deleted';
+        return this.postRepository.delete(id);
     }
 
     public async getAllPostsByAdmin(authorId: string) {
-        // return this.postRepository.find({ where: { author: { id: authorId } } });
-        return 'all posts are fetched by admin';
+        return this.postRepository.find({ where: { author: { id: authorId } }, relations: ['author', 'category'] });
     }
 }
