@@ -1,50 +1,56 @@
-import { Column, CreateDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { User } from "./user.entity";
-import { Category } from "./category.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { User } from './user.entity';
+import { Category } from './category.entity';
 
 export enum PostStatus {
-    DRAFT = 'draft',
-    PUBLISHED = 'published',
-    UNPUBLISHED = 'unpublished',
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  UNPUBLISHED = 'unpublished',
 }
 
 @Entity('posts')
-
 export class Post {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column()
-    title: string;
+  @Column()
+  title: string;
 
-    @Column()
-    slug: string;
+  @Column()
+  slug: string;
 
-    @Column()
-    content: string;
+  @Column()
+  content: string;
 
-    @Column()
-    coverImage: string;
+  @Column()
+  coverImage: string;
 
-    @Column({
-        type: 'enum',
-        enum: PostStatus,
-        default: PostStatus.DRAFT
-    })
-    status: PostStatus;
+  @Column({
+    type: 'enum',
+    enum: PostStatus,
+    default: PostStatus.DRAFT,
+  })
+  status: PostStatus;
 
-    @Column({ default: 0 })
-    views: number;
+  @Column({ default: 0 })
+  views: number;
 
-    @ManyToOne(() => User, (user) => user.posts)
-    author: User;
+  @ManyToOne(() => User, (user) => user.posts)
+  author: User;
 
-    @ManyToOne(() => Category, (category) => category.posts)
-    category: Category;
+  @ManyToOne(() => Category, (category) => category.posts)
+  category: Category;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @CreateDateColumn()
+  createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

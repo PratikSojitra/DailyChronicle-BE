@@ -48,7 +48,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
       defaults: {
         from: '"Daily Chronicle" <noreply@dailychronicle.com>',
       },
-    })
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

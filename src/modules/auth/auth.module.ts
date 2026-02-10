@@ -3,15 +3,25 @@ import { PassportModule } from "@nestjs/passport";
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "src/entities/user.entity";
-import { ConfigModule } from "@nestjs/config";
+import { JwtModule } from "@nestjs/jwt";
+import { AuthService } from './auth.service';
+import { AuthController } from './auth.controller';
+import { JwtStrategy } from './strategies/jwt.strategy';
+import { RefreshTokenStrategy } from "./strategies/refresh-token.strategy";
+import { EmailModule } from "../email/email.module";
 
 @Module({
     imports: [
         TypeOrmModule.forFeature([User]),
-        PassportModule,
-        ConfigModule,
+        PassportModule.register({ defaultStrategy: 'jwt' }),
+        JwtModule.register({
+            secret: process.env.JWT_SECRET,
+            signOptions: { expiresIn: '1d' },
+        }),
+        EmailModule,
     ],
-    providers: [SupabaseStrategy],
-    exports: [SupabaseStrategy, PassportModule],
+    controllers: [AuthController],
+    providers: [AuthService, JwtStrategy, RefreshTokenStrategy],
+    exports: [JwtStrategy, PassportModule, AuthService],
 })
 export class AuthModule {}

@@ -11,14 +11,18 @@ export const EmailTemplates = {
 
   // 2. Curated Newsletter (The Builder)
   newsletter: (data: any) => {
-    const postsHtml = data.posts.map((post) => `
+    const postsHtml = data.posts
+      .map(
+        (post) => `
       <div style="margin-bottom: 20px; border-bottom: 1px solid #ddd;">
         ${post.imageUrl ? `<img src="${post.imageUrl}" style="max-width: 100%;" />` : ''}
         <h3>${post.title}</h3>
         <p>${post.content.substring(0, 100)}...</p>
         <a href="${data.frontendUrl}/post/${post.slug}">Read More</a>
       </div>
-    `).join('');
+    `,
+      )
+      .join('');
 
     return {
       subject: data.subject,
@@ -36,4 +40,17 @@ export const EmailTemplates = {
       `,
     };
   },
+
+  resetPassword: (data: any) => ({
+    subject: 'Reset Password',
+    html: `
+      <h1>Password Reset Request</h1>
+      <p>Someone requested a password reset for your account.</p>
+      <p>Click the link below to set a new password:</p>
+      <a href="${data.frontendUrl}/reset-password?id=${data.id}&token=${data.token}">Reset Password</a>
+      <br />
+      <p>This link is valid for 15 minutes.</p>
+      <p>If you didn't ask for this, ignore this email.</p>
+    `,
+  }),
 };

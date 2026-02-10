@@ -14,18 +14,20 @@ export class SupabaseStrategy extends PassportStrategy(Strategy) {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
   ) {
-    const supabaseUrl = configService.get<string>('SUPABASE_URL'); 
+    const supabaseUrl = configService.get<string>('SUPABASE_URL');
     const jwksUri = `${supabaseUrl}/auth/v1/.well-known/jwks.json`;
 
     super({
       jwtFromRequest: (request: any) => {
         const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request);
-        
+
         if (token) {
           try {
             const parts = token.split('.');
             if (parts.length === 3) {
-              const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
+              const payload = JSON.parse(
+                Buffer.from(parts[1], 'base64').toString(),
+              );
             }
           } catch (e) {}
         }
@@ -45,7 +47,6 @@ export class SupabaseStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-
     if (!payload.sub) {
       throw new UnauthorizedException('Invalid token payload');
     }
@@ -53,8 +54,8 @@ export class SupabaseStrategy extends PassportStrategy(Strategy) {
     const user = await this.userRepository.findOneBy({ id: payload.sub });
 
     if (!user) {
-        throw new UnauthorizedException(`User ID ${payload.sub} not registered`);
+      throw new UnauthorizedException(`User ID ${payload.sub} not registered`);
     }
-    return user; 
+    return user;
   }
 }

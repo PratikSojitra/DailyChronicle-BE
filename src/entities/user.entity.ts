@@ -1,5 +1,12 @@
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import { Post } from "./post.entity";
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Post } from './post.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
@@ -9,28 +16,34 @@ export enum UserRole {
 
 @Entity('users')
 export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column({ nullable: true })
-    name: string;
+  @Column({ type: 'varchar', nullable: true })
+  name: string | null;
 
-    @Column({unique: true})
-    email: string;
+  @Column({ unique: true })
+  email: string;
 
-    @Column({
-        type: 'enum',
-        enum: UserRole,
-        default: UserRole.VIEWER
-    })
-    role: UserRole;
+  @Column({ type: 'varchar', nullable: true })
+  password: string | null;
 
-    @OneToMany(() => Post, (post) => post.author)
-    posts: Post[];
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.VIEWER,
+  })
+  role: UserRole;
 
-    @CreateDateColumn()
-    createdAt: Date;
+  @Column({ type: 'varchar', nullable: true })
+  hashedRefreshToken: string | null;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+  @OneToMany(() => Post, (post) => post.author)
+  posts: Post[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
