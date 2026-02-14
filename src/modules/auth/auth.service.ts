@@ -24,7 +24,7 @@ export class AuthService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
     private emailService: EmailService,
-  ) {}
+  ) { }
 
   async getTokens(
     userId: string,
@@ -76,7 +76,7 @@ export class AuthService {
       const tokens = await this.getTokens(newUser.id, newUser.email);
       await this.updateRefreshTokenHash(newUser.id, tokens.refresh_token);
       return tokens;
-      
+
     } catch (error) {
       if (error.code === '23505') {
         // Postgres error code for duplicate email
@@ -90,38 +90,49 @@ export class AuthService {
   // --- 2. SIGN IN ---
   async signIn(
     authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string; user: Partial<User> }> {
     const { email, password } = authCredentialsDto;
     const user = await this.userRepository.findOne({ where: { email } });
 
     // Validate Password
-    if(!user || !user.password || !(await bcrypt.compare(password, user.password))){
+    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
-    return tokens;
+
+
+    // Remove sensitive data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _p, hashedRefreshToken: _h, ...userResponse } = user;
+
+    return { ...tokens, user: userResponse };
   }
 
   async adminSignIn(
     authCredentialsDto: AuthCredentialsDto,
-  ): Promise<{ access_token: string; refresh_token: string }> {
+  ): Promise<{ access_token: string; refresh_token: string; user: Partial<User> }> {
     const { email, password } = authCredentialsDto;
     const user = await this.userRepository.findOne({ where: { email } });
 
     // Validate Password
-     if(!user || !user.password || !(await bcrypt.compare(password, user.password))){
+    if (!user || !user.password || !(await bcrypt.compare(password, user.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    if(user.role === UserRole.VIEWER){
+    if (user.role === UserRole.VIEWER) {
       throw new UnauthorizedException('You are not authorized to perform this action');
     }
 
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
-    return tokens;
+
+    // Remove sensitive data
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { password: _p2, hashedRefreshToken: _h2, ...userResponse } = user;
+
+    return { ...tokens, user: userResponse };
   }
 
   async forgetPassword(
@@ -185,7 +196,7 @@ export class AuthService {
     // If valid, generate a NEW pair of tokens
     const tokens = await this.getTokens(user.id, user.email);
     await this.updateRefreshTokenHash(user.id, tokens.refresh_token);
-    
+
     return tokens;
   }
 }
