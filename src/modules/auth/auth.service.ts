@@ -59,7 +59,7 @@ export class AuthService {
   async signUp(
     authCredentialsDto: AuthCredentialsDto,
   ): Promise<{ access_token: string; refresh_token: string }> {
-    const { email, password } = authCredentialsDto;
+    const { email, password, profileImage } = authCredentialsDto;
 
     // Hash the password (Salt + Hash)
     const salt = await bcrypt.genSalt();
@@ -69,6 +69,7 @@ export class AuthService {
       email,
       password: hashedPassword, // Store the HASH, not the real password
       role: UserRole.VIEWER, // Default role
+      profileImage,
     });
 
     try {

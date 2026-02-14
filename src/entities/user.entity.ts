@@ -38,6 +38,9 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   hashedRefreshToken: string | null;
 
+  @Column({ type: 'varchar', nullable: true })
+  profileImage: string | null;
+
   @OneToMany(() => Post, (post) => post.author)
   posts: Post[];
 
