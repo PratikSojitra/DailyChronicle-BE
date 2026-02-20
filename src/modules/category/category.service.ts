@@ -9,7 +9,7 @@ export class CategoryService {
   constructor(
     @InjectRepository(Category)
     private readonly categoryRepository: Repository<Category>,
-  ) {}
+  ) { }
 
   public async createCategory(createCategoryDto: CreateCategoryDto) {
     const category = this.categoryRepository.create(createCategoryDto);
@@ -17,11 +17,18 @@ export class CategoryService {
   }
 
   public async getAllCategories() {
-    return this.categoryRepository.find();
+    return this.categoryRepository
+      .createQueryBuilder('category')
+      .loadRelationCountAndMap('category.postCount', 'category.posts')
+      .getMany();
   }
 
   public async getCategoryById(id: string) {
-    return this.categoryRepository.findOne({ where: { id } });
+    return this.categoryRepository
+      .createQueryBuilder('category')
+      .loadRelationCountAndMap('category.postCount', 'category.posts')
+      .where('category.id = :id', { id })
+      .getOne();
   }
 
   public async updateCategory(
