@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorator/roles.decorator';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UserRole } from 'src/entities/user.entity';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -23,7 +24,7 @@ export class CategoryController {
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
     return this.categoryService.createCategory(createCategoryDto);
@@ -41,7 +42,7 @@ export class CategoryController {
 
   @Put(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   async updateCategory(
     @Param('id') id: string,
@@ -52,7 +53,7 @@ export class CategoryController {
 
   @Delete(':id')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   @ApiBearerAuth('JWT-auth')
   async deleteCategory(@Param('id') id: string) {
     return this.categoryService.deleteCategory(id);

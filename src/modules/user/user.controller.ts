@@ -21,6 +21,7 @@ import {
   GetUsersFilterDto,
 } from './dto/user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { UserRole } from 'src/entities/user.entity';
 
 @ApiTags('Users')
 @Controller('users')
@@ -30,7 +31,7 @@ export class UserController {
   @Post()
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   async createUser(@Body() createUserDto: CreateUserDto) {
     return this.userService.createUser(createUserDto);
   }
@@ -38,7 +39,7 @@ export class UserController {
   @Get()
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   async getAllUsers(@Query() filters: GetUsersFilterDto) {
     return this.userService.getAllUsers(filters);
   }
@@ -46,7 +47,7 @@ export class UserController {
   @Get('role-requests')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   async getRoleChangeRequests() {
     return this.userService.getRoleChangeRequests();
   }
@@ -71,7 +72,7 @@ export class UserController {
   @Put('role/:id')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   async updateUserRole(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserRoleDto,
@@ -92,7 +93,7 @@ export class UserController {
   @Delete(':id')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles(UserRole.ADMIN)
   async deleteUser(@Param('id') id: string) {
     return this.userService.deleteUser(id);
   }
