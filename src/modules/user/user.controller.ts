@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -17,6 +18,7 @@ import {
   RequestRoleChangeDto,
   UpdateUserDto,
   UpdateUserRoleDto,
+  GetUsersFilterDto,
 } from './dto/user.dto';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 
@@ -37,8 +39,8 @@ export class UserController {
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('admin')
-  async getAllUsers() {
-    return this.userService.getAllUsers();
+  async getAllUsers(@Query() filters: GetUsersFilterDto) {
+    return this.userService.getAllUsers(filters);
   }
 
   @Get('role-requests')

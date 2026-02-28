@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import { CreateCategoryDto, GetCategoriesFilterDto, UpdateCategoryDto } from './dto/category.dto';
 import { Category } from 'src/entities/category.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { buildPaginationResponse } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class CategoryService {
@@ -21,16 +22,35 @@ export class CategoryService {
     return this.categoryRepository.save(category);
   }
 
-  public async getAllCategories() {
-    return this.categoryRepository
+  public async getAllCategories(filters: GetCategoriesFilterDto) {
+    const { page = 1, limit = 10, parentId, search } = filters;
+    const skip = (page - 1) * limit;
+
+    const query = this.categoryRepository
       .createQueryBuilder('category')
       .leftJoinAndSelect('category.subcategories', 'subcategories')
-      // You can deeply nested left joins if needed, e.g. 'subcategories.subcategories'
-      // But typically one or two levels is enough for most UIs
       .loadRelationCountAndMap('category.postCount', 'category.posts')
-      .loadRelationCountAndMap('subcategories.postCount', 'subcategories.posts')
-      .where('category.parentCategory IS NULL') // Only fetch root categories (where parent is null)
-      .getMany();
+      .loadRelationCountAndMap('subcategories.postCount', 'subcategories.posts');
+
+    if (parentId) {
+      query.andWhere('category.parentCategory.id = :parentId', { parentId });
+    } else if (parentId === null || parentId === undefined) {
+      // by default only fetch root categories unless filtering by a specific parent
+      query.andWhere('category.parentCategory IS NULL');
+    }
+
+    if (search) {
+      query.andWhere(
+        '(category.name ILIKE :search OR category.slug ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    query.skip(skip).take(limit).orderBy('category.createdAt', 'DESC');
+
+    const [categories, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(categories, total, page, limit);
   }
 
   public async getCategoryById(id: string) {

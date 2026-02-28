@@ -4,10 +4,12 @@ import { Post, PostStatus } from 'src/entities/post.entity';
 import { Repository } from 'typeorm';
 import {
   CreatePostDto,
+  GetPostsFilterDto,
   UpdatePostDto,
   UpdatePostStatusDto,
 } from './dto/post.dto';
 import { PostView } from 'src/entities/postView.entity';
+import { buildPaginationResponse } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class PostService {
@@ -16,7 +18,7 @@ export class PostService {
     private postRepository: Repository<Post>,
     @InjectRepository(PostView)
     private postViewRepository: Repository<PostView>,
-  ) {}
+  ) { }
 
   public async createPost(createPostDto: CreatePostDto) {
     const createPostPayload = {
@@ -31,10 +33,46 @@ export class PostService {
     return this.postRepository.save(post);
   }
 
-  public async getAllPosts() {
-    return this.postRepository.find({
-      relations: ['author', 'category'],
-    });
+  public async getAllPosts(filters?: GetPostsFilterDto) {
+    const query = this.postRepository.createQueryBuilder('post')
+      .leftJoinAndSelect('post.author', 'author')
+      .leftJoinAndSelect('post.category', 'category');
+
+    if (filters?.authorId) {
+      query.andWhere('author.id = :authorId', { authorId: filters.authorId });
+    }
+
+    if (filters?.categoryId) {
+      query.andWhere('category.id = :categoryId', { categoryId: filters.categoryId });
+    }
+
+    if (filters?.categorySlug) {
+      query.andWhere('category.slug = :categorySlug', { categorySlug: filters.categorySlug });
+    }
+
+    if (filters?.startDate) {
+      query.andWhere('post.createdAt >= :startDate', { startDate: filters.startDate });
+    }
+
+    if (filters?.endDate) {
+      query.andWhere('post.createdAt <= :endDate', { endDate: filters.endDate });
+    }
+
+    if (filters?.search) {
+      query.andWhere(
+        '(post.title ILIKE :search OR post.slug ILIKE :search OR post.content ILIKE :search)',
+        { search: `%${filters.search}%` },
+      );
+    }
+
+    const { page = 1, limit = 10 } = filters || {};
+    const skip = (page - 1) * limit;
+
+    query.skip(skip).take(limit).orderBy('post.createdAt', 'DESC');
+
+    const [posts, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(posts, total, page, limit);
   }
 
   public async getPostById(id: string, ip?: string, userId?: string) {

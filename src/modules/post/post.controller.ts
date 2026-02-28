@@ -6,6 +6,7 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
   Request,
 } from '@nestjs/common';
@@ -16,6 +17,7 @@ import { Roles } from 'src/decorator/roles.decorator';
 import { UserRole } from 'src/entities/user.entity';
 import {
   CreatePostDto,
+  GetPostsFilterDto,
   UpdatePostDto,
   UpdatePostStatusDto,
 } from './dto/post.dto';
@@ -27,8 +29,8 @@ export class PostController {
   constructor(private readonly postService: PostService) { }
 
   @Get()
-  async getAllPosts() {
-    return this.postService.getAllPosts();
+  async getAllPosts(@Query() filters: GetPostsFilterDto) {
+    return this.postService.getAllPosts(filters);
   }
 
   @Get('admin/:getAllPosts')

@@ -7,7 +7,9 @@ import {
   RequestRoleChangeDto,
   UpdateUserDto,
   UpdateUserRoleDto,
+  GetUsersFilterDto,
 } from './dto/user.dto';
+import { buildPaginationResponse } from 'src/common/dto/pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -21,9 +23,28 @@ export class UserService {
     return this.userRepository.save(user);
   }
 
-  public async getAllUsers() {
-    const users = await this.userRepository.find();
-    return users;
+  public async getAllUsers(filters: GetUsersFilterDto) {
+    const { page = 1, limit = 10, role, search } = filters;
+    const skip = (page - 1) * limit;
+
+    const query = this.userRepository.createQueryBuilder('user');
+
+    if (role) {
+      query.andWhere('user.role = :role', { role });
+    }
+
+    if (search) {
+      query.andWhere(
+        '(user.name ILIKE :search OR user.email ILIKE :search)',
+        { search: `%${search}%` }
+      );
+    }
+
+    query.skip(skip).take(limit).orderBy('user.createdAt', 'DESC');
+
+    const [users, total] = await query.getManyAndCount();
+
+    return buildPaginationResponse(users, total, page, limit);
   }
 
   public async getRoleChangeRequests() {

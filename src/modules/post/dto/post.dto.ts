@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString, IsDateString } from 'class-validator';
 import { PostStatus } from 'src/entities/post.entity';
 
 export class CreatePostDto {
@@ -83,4 +83,38 @@ export class UpdatePostStatusDto {
   @IsString({ message: 'Status must be a string' })
   @IsEnum(PostStatus, { message: 'Status must be a valid status' })
   status: PostStatus;
+}
+
+import { PaginationDto } from 'src/common/dto/pagination.dto';
+
+export class GetPostsFilterDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Filter by Author ID' })
+  @IsOptional()
+  @IsString()
+  authorId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by Category ID' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by Category Slug' })
+  @IsOptional()
+  @IsString()
+  categorySlug?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by start date (ISO string)' })
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by end date (ISO string)' })
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @ApiPropertyOptional({ description: 'Search by title or slug' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

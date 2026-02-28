@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 
 export class CreateCategoryDto {
   @ApiProperty({ required: true })
@@ -35,4 +36,16 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString({ message: 'Parent ID must be a string' })
   parentId?: string;
+}
+
+export class GetCategoriesFilterDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Filter by Parent ID' })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+
+  @ApiPropertyOptional({ description: 'Search loosely by name or slug' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

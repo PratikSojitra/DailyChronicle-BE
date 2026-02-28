@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { PaginationDto } from 'src/common/dto/pagination.dto';
 import {
   IsEmail,
   IsEnum,
@@ -55,4 +56,16 @@ export class RequestRoleChangeDto {
   @IsNotEmpty({ message: 'Requested role is required' })
   @IsEnum(UserRole, { message: 'Requested role must be a valid role' })
   role: UserRole;
+}
+
+export class GetUsersFilterDto extends PaginationDto {
+  @ApiPropertyOptional({ description: 'Filter by role', enum: UserRole })
+  @IsOptional()
+  @IsEnum(UserRole)
+  role?: UserRole;
+
+  @ApiPropertyOptional({ description: 'Search loosely by name or email' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

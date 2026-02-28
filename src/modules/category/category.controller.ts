@@ -6,10 +6,11 @@ import {
   Param,
   Post,
   Put,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { CategoryService } from './category.service';
-import { CreateCategoryDto, UpdateCategoryDto } from './dto/category.dto';
+import { CreateCategoryDto, GetCategoriesFilterDto, UpdateCategoryDto } from './dto/category.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from 'src/guards/roles.guard';
 import { Roles } from 'src/decorator/roles.decorator';
@@ -18,7 +19,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('Categories')
 @Controller('categories')
 export class CategoryController {
-  constructor(private readonly categoryService: CategoryService) {}
+  constructor(private readonly categoryService: CategoryService) { }
 
   @Post()
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -29,8 +30,8 @@ export class CategoryController {
   }
 
   @Get()
-  async getAllCategories() {
-    return this.categoryService.getAllCategories();
+  async getAllCategories(@Query() filters: GetCategoriesFilterDto) {
+    return this.categoryService.getAllCategories(filters);
   }
 
   @Get(':id')
