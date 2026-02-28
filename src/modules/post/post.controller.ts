@@ -33,12 +33,12 @@ export class PostController {
     return this.postService.getAllPosts(filters);
   }
 
-  @Get('admin/:getAllPosts')
+  @Get('admin')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  async getAllPostsByAdmin(@Param('authorId') authorId: string) {
-    return this.postService.getAllPostsByAdmin(authorId);
+  async getAllPostsByAdmin(@Request() req, @Query() filters: GetPostsFilterDto) {
+    return this.postService.getAllPostsByAdmin(req.user, filters);
   }
 
   @Get(':id')
@@ -64,8 +64,9 @@ export class PostController {
   async updatePost(
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
+    @Request() req,
   ) {
-    return this.postService.updatePost(id, updatePostDto);
+    return this.postService.updatePost(id, updatePostDto, req.user);
   }
 
   @Put('status/:id')
@@ -75,15 +76,16 @@ export class PostController {
   async updatePostStatus(
     @Param('id') id: string,
     @Body() updatePostStatusDto: UpdatePostStatusDto,
+    @Request() req,
   ) {
-    return this.postService.updatePostStatus(id, updatePostStatusDto);
+    return this.postService.updatePostStatus(id, updatePostStatusDto, req.user);
   }
 
   @Delete(':id')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(UserRole.ADMIN, UserRole.EDITOR)
-  async deletePost(@Param('id') id: string) {
-    return this.postService.deletePost(id);
+  async deletePost(@Param('id') id: string, @Request() req) {
+    return this.postService.deletePost(id, req.user);
   }
 }
