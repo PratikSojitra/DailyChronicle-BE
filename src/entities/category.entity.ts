@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -21,6 +22,15 @@ export class Category {
 
   @OneToMany(() => Post, (post) => post.category)
   posts: Post[];
+
+  @ManyToOne(() => Category, (category) => category.subcategories, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
+  parentCategory: Category;
+
+  @OneToMany(() => Category, (category) => category.parentCategory)
+  subcategories: Category[];
 
   @CreateDateColumn()
   createdAt: Date;

@@ -49,3 +49,10 @@ export class UpdateUserRoleDto {
   @IsEnum(UserRole, { message: 'Role must be a valid role' })
   role: UserRole;
 }
+
+export class RequestRoleChangeDto {
+  @ApiProperty({ example: UserRole.EDITOR })
+  @IsNotEmpty({ message: 'Requested role is required' })
+  @IsEnum(UserRole, { message: 'Requested role must be a valid role' })
+  role: UserRole;
+}

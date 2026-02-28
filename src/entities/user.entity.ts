@@ -35,6 +35,13 @@ export class User {
   })
   role: UserRole;
 
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    nullable: true,
+  })
+  requestedRole: UserRole | null;
+
   @Column({ type: 'varchar', nullable: true })
   hashedRefreshToken: string | null;
 

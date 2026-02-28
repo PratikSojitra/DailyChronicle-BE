@@ -4,6 +4,7 @@ import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
 import {
   CreateUserDto,
+  RequestRoleChangeDto,
   UpdateUserDto,
   UpdateUserRoleDto,
 } from './dto/user.dto';
@@ -13,7 +14,7 @@ export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-  ) {}
+  ) { }
 
   public async createUser(createUserDto: CreateUserDto) {
     const user = this.userRepository.create(createUserDto);
@@ -23,6 +24,22 @@ export class UserService {
   public async getAllUsers() {
     const users = await this.userRepository.find();
     return users;
+  }
+
+  public async getRoleChangeRequests() {
+    return this.userRepository
+      .createQueryBuilder('user')
+      .where('user.requestedRole IS NOT NULL')
+      .getMany();
+  }
+
+  public async requestRoleChange(id: string, requestRoleChangeDto: RequestRoleChangeDto) {
+    const user = await this.userRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new Error('User not found');
+    }
+    user.requestedRole = requestRoleChangeDto.role;
+    return this.userRepository.save(user);
   }
 
   public async getUserById(id: string) {
@@ -53,6 +70,11 @@ export class UserService {
     if (!user) {
       throw new Error('User not found');
     }
-    return this.userRepository.save({ ...user, ...updateUserRoleDto });
+
+    // Clear requested role upon role update
+    user.requestedRole = null;
+    user.role = updateUserRoleDto.role;
+
+    return this.userRepository.save(user);
   }
 }

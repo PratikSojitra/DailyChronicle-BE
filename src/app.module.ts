@@ -13,6 +13,7 @@ import { UserModule } from './modules/user/user.module';
 import { NewsletterModule } from './modules/newsletter/newsletter.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MailerModule } from '@nestjs-modules/mailer';
+import { CloudinaryModule } from './modules/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MailerModule } from '@nestjs-modules/mailer';
     PostModule,
     UserModule,
     NewsletterModule,
+    CloudinaryModule,
     EventEmitterModule.forRoot(),
     MailerModule.forRoot({
       transport: {
@@ -53,4 +55,4 @@ import { MailerModule } from '@nestjs-modules/mailer';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

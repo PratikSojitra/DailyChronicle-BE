@@ -12,20 +12,32 @@ export class CategoryService {
   ) { }
 
   public async createCategory(createCategoryDto: CreateCategoryDto) {
-    const category = this.categoryRepository.create(createCategoryDto);
+    const { parentId, ...rest } = createCategoryDto;
+    const savePayload = {
+      ...rest,
+      ...(parentId ? { parentCategory: { id: parentId } } : {}),
+    };
+    const category = this.categoryRepository.create(savePayload);
     return this.categoryRepository.save(category);
   }
 
   public async getAllCategories() {
     return this.categoryRepository
       .createQueryBuilder('category')
+      .leftJoinAndSelect('category.subcategories', 'subcategories')
+      // You can deeply nested left joins if needed, e.g. 'subcategories.subcategories'
+      // But typically one or two levels is enough for most UIs
       .loadRelationCountAndMap('category.postCount', 'category.posts')
+      .loadRelationCountAndMap('subcategories.postCount', 'subcategories.posts')
+      .where('category.parentCategory IS NULL') // Only fetch root categories (where parent is null)
       .getMany();
   }
 
   public async getCategoryById(id: string) {
     return this.categoryRepository
       .createQueryBuilder('category')
+      .leftJoinAndSelect('category.subcategories', 'subcategories')
+      .leftJoinAndSelect('category.parentCategory', 'parentCategory')
       .loadRelationCountAndMap('category.postCount', 'category.posts')
       .where('category.id = :id', { id })
       .getOne();
@@ -39,7 +51,14 @@ export class CategoryService {
     if (!category) {
       throw new Error('Category not found');
     }
-    return this.categoryRepository.save({ ...category, ...updateCategoryDto });
+    const { parentId, ...rest } = updateCategoryDto;
+    const updatePayload: any = { ...rest };
+
+    if (parentId !== undefined) {
+      updatePayload.parentCategory = parentId ? { id: parentId } : null;
+    }
+
+    return this.categoryRepository.save({ ...category, ...updatePayload });
   }
 
   public async deleteCategory(id: string) {

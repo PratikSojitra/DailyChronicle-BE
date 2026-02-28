@@ -14,6 +14,7 @@ import { UserService } from './user.service';
 import { Roles } from 'src/decorator/roles.decorator';
 import {
   CreateUserDto,
+  RequestRoleChangeDto,
   UpdateUserDto,
   UpdateUserRoleDto,
 } from './dto/user.dto';
@@ -22,7 +23,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 @ApiTags('Users')
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService) { }
 
   @Post()
   @ApiBearerAuth('JWT-auth')
@@ -38,6 +39,14 @@ export class UserController {
   @Roles('admin')
   async getAllUsers() {
     return this.userService.getAllUsers();
+  }
+
+  @Get('role-requests')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('admin')
+  async getRoleChangeRequests() {
+    return this.userService.getRoleChangeRequests();
   }
 
   @Get(':id')
@@ -66,6 +75,16 @@ export class UserController {
     @Body() updateUserDto: UpdateUserRoleDto,
   ) {
     return this.userService.updateUserRole(id, updateUserDto);
+  }
+
+  @Put('request-role/:id')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(AuthGuard('jwt'))
+  async requestRoleChange(
+    @Param('id') id: string,
+    @Body() requestRoleChangeDto: RequestRoleChangeDto,
+  ) {
+    return this.userService.requestRoleChange(id, requestRoleChangeDto);
   }
 
   @Delete(':id')

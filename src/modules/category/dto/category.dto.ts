@@ -11,6 +11,11 @@ export class CreateCategoryDto {
   @IsNotEmpty({ message: 'Slug is required' })
   @IsString({ message: 'Slug must be a string' })
   slug: string;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString({ message: 'Parent ID must be a string' })
+  parentId?: string;
 }
 
 export class UpdateCategoryDto {
@@ -25,4 +30,9 @@ export class UpdateCategoryDto {
   @IsNotEmpty({ message: 'Slug is required' })
   @IsString({ message: 'Slug must be a string' })
   slug?: string;
+
+  @ApiPropertyOptional({ required: false })
+  @IsOptional()
+  @IsString({ message: 'Parent ID must be a string' })
+  parentId?: string;
 }
