@@ -4,7 +4,7 @@ import {
     UploadApiErrorResponse,
     UploadApiResponse,
 } from 'cloudinary';
-import * as toStream from 'buffer-to-stream';
+import { Readable } from 'stream';
 
 @Injectable()
 export class CloudinaryService {
@@ -22,7 +22,7 @@ export class CloudinaryService {
                 },
             );
 
-            toStream(file.buffer).pipe(upload);
+            Readable.from(file.buffer).pipe(upload);
         });
     }
 }
